@@ -161,7 +161,7 @@ export class PeoplesController {
   // API Add photopack
   @Post(":id/photopacks")
   @UseInterceptors(
-    FilesInterceptor("media", 100, {
+    FilesInterceptor("media", undefined, {
       storage: diskStorage({
         destination: (req, file, cb) => {
           const tempPath = path.join(os.tmpdir(), "peoplefy_uploads");
