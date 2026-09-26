@@ -1,0 +1,38 @@
+{
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.7",
+    "@types/bun": "latest",
+    "@types/node": "^26.6.3",
+    "dotenv-cli": "^8.0.0",
+    "prisma": "^6.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.1.0",
+    "@nestjs/core": "^12.1.0",
+    "@nestjs/platform-express": "^12.1.0",
+    "@nestjs/swagger": "^12.0.2",
+    "@prisma/client": "^7.10.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "scripts": {
+    "build": "nest build",
+    "start": "bun --env-file=.env run src/main.ts",
+    "start:dev": "bun --watch --env-file=.env.dev run src/main.ts",
+    "prisma:dev:migrate": "dotenv -e .env.dev -- bunx prisma migrate dev",
+    "prisma:dev:push": "dotenv -e .env.dev -- bunx prisma db push",
+    "prisma:dev:generate": "dotenv -e .env.dev -- bunx prisma generate",
+    "prisma:dev:studio": "dotenv -e .env.dev -- bunx prisma studio",
+    "prisma:prod:migrate": "dotenv -e .env -- bunx prisma migrate deploy",
+    "prisma:prod:studio": "dotenv -e .env -- bunx prisma studio"
+  }
+}
