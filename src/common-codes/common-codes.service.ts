@@ -16,6 +16,11 @@ export class CommonCodesService {
   async findAllTypes() {
     return this.prisma.commonCodeType.findMany({
       orderBy: { code: "asc" },
+      include: {
+        details: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
     });
   }
 
@@ -66,7 +71,7 @@ export class CommonCodesService {
   }
 
   async removeType(id: string) {
-    await this.findOneType(id); // Ensure exists
+    await this.findOneType(id);
     return this.prisma.commonCodeType.delete({
       where: { id },
     });

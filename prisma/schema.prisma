@@ -36,3 +36,102 @@ model CommonCodeDetail {
   @@index([typeId])
   @@map("common_code_details")
 }
+
+model Person {
+  id          String    @id @default(uuid(7))
+  fullName    String    @map("full_name") @db.VarChar(150)
+  nickname    String?   @db.VarChar(100)
+  birthDate   DateTime? @map("birth_date") @db.Date
+  birthPlace  String?   @map("birth_place") @db.VarChar(100)
+  description String?   @db.Text
+  tags        String[]
+  
+  coverUrl    String?   @map("cover_url")
+  avatarUrl   String?   @map("avatar_url")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  socials      Social[]
+  websites     Website[]
+  closePersons ClosePerson[]
+  photopacks   Photopack[]
+
+  @@map("persons")
+}
+
+model Social {
+  id        String   @id @default(uuid(7))
+  personId  String   @map("person_id")
+  platform  String   @db.VarChar(50)
+  url       String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([personId])
+  @@map("socials")
+}
+
+model Website {
+  id        String   @id @default(uuid(7))
+  personId  String   @map("person_id")
+  platform  String   @db.VarChar(50)
+  url       String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([personId])
+  @@map("websites")
+}
+
+model ClosePerson {
+  id        String   @id @default(uuid(7))
+  personId  String   @map("person_id")
+  relation  String   @db.VarChar(100)
+  platform  String   @db.VarChar(50)
+  url       String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([personId])
+  @@map("close_persons")
+}
+
+model Photopack {
+  id          String   @id @default(uuid(7))
+  personId    String   @map("person_id")
+  title       String   @db.VarChar(255)
+  platform    String?  @db.VarChar(100)
+  externalUrl String?  @map("external_url") @db.Text
+  coverUrl    String?  @map("cover_url") @db.Text
+  photoCount  Int      @default(0) @map("photo_count")
+  videoCount  Int      @default(0) @map("video_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  media       Media[]
+
+  @@index([personId])
+  @@map("photopacks")
+}
+
+model Media {
+  id          String    @id @default(uuid(7))
+  photopackId String    @map("photopack_id")
+  type        String    @db.VarChar(50) // "image" or "video"
+  url         String    @db.Text
+  isCover     Boolean   @default(false) @map("is_cover")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  photopack   Photopack @relation(fields: [photopackId], references: [id], onDelete: Cascade)
+
+  @@index([photopackId])
+  @@map("media")
+}
