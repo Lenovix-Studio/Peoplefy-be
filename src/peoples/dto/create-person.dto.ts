@@ -21,6 +21,7 @@ export class WebsiteDto {
 }
 
 export class ClosePersonDto {
+  @IsString() @IsNotEmpty() label!: string;
   @IsString() @IsNotEmpty() relation!: string;
   @IsString() @IsNotEmpty() platform!: string;
   @IsString() @IsNotEmpty() url!: string;
@@ -38,6 +39,21 @@ export class CreatePersonDto {
   @IsOptional()
   @MaxLength(100)
   nickname?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  gender?: string;
+
+  @ApiPropertyOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  activities?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  isNsfw?: boolean;
 
   @ApiPropertyOptional()
   @IsDateString()

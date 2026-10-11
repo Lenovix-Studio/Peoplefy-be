@@ -45,6 +45,9 @@ model Person {
   birthPlace  String?   @map("birth_place") @db.VarChar(100)
   description String?   @db.Text
   tags        String[]
+  gender      String?   @db.VarChar(20)
+  isNsfw      Boolean   @default(false) @map("is_nsfw")
+  activities  String[]  @map("activities")
   
   coverUrl    String?   @map("cover_url")
   avatarUrl   String?   @map("avatar_url")
@@ -91,6 +94,7 @@ model Website {
 model ClosePerson {
   id        String   @id @default(uuid(7))
   personId  String   @map("person_id")
+  label     String?  @db.VarChar(100)
   relation  String   @db.VarChar(100)
   platform  String   @db.VarChar(50)
   url       String   @db.VarChar(255)
