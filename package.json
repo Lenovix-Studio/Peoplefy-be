@@ -37,10 +37,12 @@
     "prisma:dev:push": "dotenv -e .env.dev -- bunx prisma db push",
     "prisma:dev:generate": "dotenv -e .env.dev -- bunx prisma generate",
     "prisma:dev:seed": "dotenv -e .env.dev -- bunx prisma db seed",
+    "prisma:dev:studio": "dotenv -e .env.dev -- bunx prisma studio",
     "prisma:prod:migrate": "dotenv -e .env -- bunx prisma migrate deploy",
     "prisma:prod:push": "dotenv -e .env -- bunx prisma db push",
     "prisma:prod:generate": "dotenv -e .env -- bunx prisma generate",
-    "prisma:prod:seed": "dotenv -e .env -- bunx prisma db seed"
+    "prisma:prod:seed": "dotenv -e .env -- bunx prisma db seed",
+    "prisma:prod:studio": "dotenv -e .env -- bunx prisma studio"
   },
   "prisma": {
     "seed": "bun run prisma/seed.ts"
