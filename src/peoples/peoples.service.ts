@@ -440,6 +440,7 @@ export class PeoplesService {
       fs.mkdirSync(targetDir, { recursive: true });
     }
 
+    let coverUrl: string | null = null;
     const newMediaData = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -454,6 +455,26 @@ export class PeoplesService {
       fs.unlinkSync(file.path);
 
       const fileUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${filename}`;
+
+      let thumbUrl = fileUrl;
+      if (file.mimetype.startsWith("video")) {
+        const thumbFilename = `${Date.now()}-${i}-thumb.jpg`;
+        const thumbPath = path.join(targetDir, thumbFilename);
+        try {
+          const { execSync } = require("child_process");
+          execSync(
+            `ffmpeg -ss 00:00:01 -i "${finalPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+            { stdio: "ignore" },
+          );
+          if (fs.existsSync(thumbPath)) {
+            thumbUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+          }
+        } catch (err) {}
+      }
+
+      if (isCover && !coverUrl) {
+        coverUrl = thumbUrl;
+      }
 
       newMediaData.push({
         type: file.mimetype.startsWith("video") ? "video" : "image",
@@ -481,17 +502,99 @@ export class PeoplesService {
     }
 
     const updatedPhotopack = await this.findPhotopack(personId, photopackId);
-    let coverUrl: string | null =
-      updatedPhotopack.media.find((m) => m.isCover)?.url || null;
-    const firstMedia =
-      updatedPhotopack.media.length > 0 ? updatedPhotopack.media[0] : undefined;
-
-    if (!coverUrl && firstMedia) {
-      coverUrl = firstMedia.url;
-      await this.prisma.media.update({
-        where: { id: firstMedia.id },
-        data: { isCover: true },
-      });
+    let finalCoverUrl: string | null = null;
+    let coverMedia = updatedPhotopack.media.find((m) => m.isCover);
+    if (coverMedia) {
+      if (coverMedia.type === "video") {
+        const storagePath =
+          process.env.STORAGE_PATH ||
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "..",
+            "infra",
+            "storage",
+            "peoples_dev",
+          );
+        const videoUrl = coverMedia.url;
+        const relativePath = videoUrl.replace(
+          `${process.env.API_URL || "http://localhost:3001"}/storage/`,
+          "",
+        );
+        const videoPath = path.join(storagePath, relativePath);
+        const thumbFilename = `${Date.now()}-cover-thumb.jpg`;
+        const thumbPath = path.join(targetDir, thumbFilename);
+        try {
+          const { execSync } = require("child_process");
+          execSync(
+            `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+            { stdio: "ignore" },
+          );
+          if (fs.existsSync(thumbPath)) {
+            finalCoverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+          }
+        } catch (err) {}
+        if (!finalCoverUrl) {
+          finalCoverUrl = coverUrl || coverMedia.url;
+        }
+      } else {
+        finalCoverUrl = coverMedia.url;
+      }
+    } else {
+      const firstMedia =
+        updatedPhotopack.media.length > 0
+          ? updatedPhotopack.media[0]
+          : undefined;
+      if (firstMedia) {
+        if (firstMedia.type === "video") {
+          const storagePath =
+            process.env.STORAGE_PATH ||
+            path.join(
+              __dirname,
+              "..",
+              "..",
+              "..",
+              "infra",
+              "storage",
+              "peoples_dev",
+            );
+          const videoUrl = firstMedia.url;
+          const relativePath = videoUrl.replace(
+            `${process.env.API_URL || "http://localhost:3001"}/storage/`,
+            "",
+          );
+          const videoPath = path.join(storagePath, relativePath);
+          const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
+          const thumbPath = path.join(targetDir, thumbFilename);
+          try {
+            const { execSync } = require("child_process");
+            execSync(
+              `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+              { stdio: "ignore" },
+            );
+            if (fs.existsSync(thumbPath)) {
+              finalCoverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+              await this.prisma.media.update({
+                where: { id: firstMedia.id },
+                data: { isCover: true },
+              });
+            }
+          } catch (err) {}
+          if (!finalCoverUrl) {
+            finalCoverUrl = coverUrl || firstMedia.url;
+          }
+        } else {
+          finalCoverUrl = firstMedia.url;
+          await this.prisma.media.update({
+            where: { id: firstMedia.id },
+            data: { isCover: true },
+          });
+        }
+      }
+    }
+    if (!finalCoverUrl) {
+      finalCoverUrl = coverUrl;
     }
 
     await this.prisma.photopack.update({
@@ -500,7 +603,7 @@ export class PeoplesService {
         title: body.title,
         platform: body.platform,
         externalUrl: body.externalUrl,
-        coverUrl: coverUrl,
+        coverUrl: finalCoverUrl,
         photoCount: updatedPhotopack.media.filter((m) => m.type === "image")
           .length,
         videoCount: updatedPhotopack.media.filter((m) => m.type === "video")
