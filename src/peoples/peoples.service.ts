@@ -301,8 +301,24 @@ export class PeoplesService {
 
       const fileUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${filename}`;
 
+      let thumbUrl = fileUrl;
+      if (file.mimetype.startsWith("video")) {
+        const thumbFilename = `${Date.now()}-${i}-thumb.jpg`;
+        const thumbPath = path.join(targetDir, thumbFilename);
+        try {
+          const { execSync } = require("child_process");
+          execSync(
+            `ffmpeg -ss 00:00:01 -i "${finalPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+            { stdio: "ignore" },
+          );
+          if (fs.existsSync(thumbPath)) {
+            thumbUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+          }
+        } catch (err) {}
+      }
+
       if (isCover && !coverUrl) {
-        coverUrl = fileUrl;
+        coverUrl = thumbUrl;
       }
 
       mediaData.push({
@@ -313,8 +329,42 @@ export class PeoplesService {
     }
 
     if (!coverUrl && mediaData.length > 0 && mediaData[0]) {
-      coverUrl = mediaData[0].url;
-      mediaData[0].isCover = true;
+      const firstMedia = mediaData[0];
+      if (firstMedia.type === "video") {
+        const firstVideoUrl = firstMedia.url;
+        const storagePath =
+          process.env.STORAGE_PATH ||
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "..",
+            "infra",
+            "storage",
+            "peoples_dev",
+          );
+        const relativePath = firstVideoUrl.replace(
+          `${process.env.API_URL || "http://localhost:3001"}/storage/`,
+          "",
+        );
+        const videoPath = path.join(storagePath, relativePath);
+        const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
+        const thumbPath = path.join(targetDir, thumbFilename);
+        try {
+          const { execSync } = require("child_process");
+          execSync(
+            `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+            { stdio: "ignore" },
+          );
+          if (fs.existsSync(thumbPath)) {
+            coverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            firstMedia.isCover = true;
+          }
+        } catch (err) {}
+      } else {
+        coverUrl = firstMedia.url;
+        firstMedia.isCover = true;
+      }
     }
 
     await this.prisma.photopack.update({
