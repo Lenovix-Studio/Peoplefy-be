@@ -41,6 +41,7 @@ model Person {
   id          String    @id @default(uuid(7))
   fullName    String    @map("full_name") @db.VarChar(150)
   nickname    String?   @db.VarChar(100)
+  email       String?   @db.VarChar(255)
   birthDate   DateTime? @map("birth_date") @db.Date
   birthPlace  String?   @map("birth_place") @db.VarChar(100)
   description String?   @db.Text

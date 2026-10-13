@@ -37,8 +37,8 @@ export class CreatePersonDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  @MaxLength(100)
-  nickname?: string;
+  @MaxLength(255)
+  email?: string;
 
   @ApiPropertyOptional()
   @IsString()
