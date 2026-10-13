@@ -203,7 +203,7 @@ export class PeoplesService {
       where: { id: photopackId, personId },
       include: {
         media: {
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
         },
         person: {
           select: {
@@ -395,10 +395,44 @@ export class PeoplesService {
       }
     } catch (e) {}
 
+    const incomingPlatform =
+      body.platform && body.platform !== "Pilih Platform (Opsional)"
+        ? body.platform
+        : null;
+    const incomingExternalUrl = body.externalUrl || null;
+    const hasNewFiles = Array.isArray(files) && files.length > 0;
+
+    const currentMediaIds = photopack.media.map((m) => m.id);
     const keptMediaIds = existingMedia.map((m) => m.id);
+    const mediaRemoved =
+      currentMediaIds.length !== keptMediaIds.length ||
+      !currentMediaIds.every((id) => keptMediaIds.includes(id));
+
+    const coverChanged = photopack.media.some((m) => {
+      const incoming = existingMedia.find((em) => em.id === m.id);
+      return incoming && incoming.isCover !== m.isCover;
+    });
+
+    const titleChanged = body.title !== photopack.title;
+    const platformChanged = incomingPlatform !== photopack.platform;
+    const externalUrlChanged = incomingExternalUrl !== photopack.externalUrl;
+
+    const hasChanges =
+      hasNewFiles ||
+      mediaRemoved ||
+      coverChanged ||
+      titleChanged ||
+      platformChanged ||
+      externalUrlChanged;
+
+    if (!hasChanges) {
+      return { message: "No changes detected", id: photopack.id };
+    }
+
+    const keptMediaIdsList = keptMediaIds;
 
     const mediaToDelete = photopack.media.filter(
-      (m) => !keptMediaIds.includes(m.id),
+      (m) => !keptMediaIdsList.includes(m.id),
     );
     for (const m of mediaToDelete) {
       try {
