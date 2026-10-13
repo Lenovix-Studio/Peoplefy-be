@@ -44,7 +44,7 @@ export class PeoplesService {
           select: { photoCount: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
     });
 
     return peoples.map((p) => ({
@@ -62,7 +62,7 @@ export class PeoplesService {
         websites: true,
         closePersons: true,
         photopacks: {
-          orderBy: { createdAt: "desc" },
+          orderBy: { updatedAt: "desc" },
         },
       },
     });
@@ -152,8 +152,8 @@ export class PeoplesService {
 
   async getRecentPhotopacks() {
     return this.prisma.photopack.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20, // Or some limit for recent
+      orderBy: { updatedAt: "desc" },
+      take: 20,
       include: {
         person: {
           select: {
