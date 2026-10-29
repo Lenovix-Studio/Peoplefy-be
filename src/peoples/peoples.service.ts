@@ -5,6 +5,17 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreatePersonDto } from "./dto/create-person.dto";
 import { UpdatePersonDto } from "./dto/update-person.dto";
 
+function sanitizePath(
+  url: string | null | undefined,
+): string | null | undefined {
+  if (!url) return url;
+  const APP_URL = process.env.APP_URL || "http://localhost:3001";
+  if (url.startsWith(APP_URL)) {
+    return url.substring(APP_URL.length);
+  }
+  return url;
+}
+
 @Injectable()
 export class PeoplesService {
   constructor(private prisma: PrismaService) {}
@@ -79,6 +90,13 @@ export class PeoplesService {
 
     await this.findOne(id);
 
+    if (personData.avatarUrl) {
+      personData.avatarUrl = sanitizePath(personData.avatarUrl) ?? undefined;
+    }
+    if (personData.coverUrl) {
+      personData.coverUrl = sanitizePath(personData.coverUrl) ?? undefined;
+    }
+
     return this.prisma.person.update({
       where: { id },
       data: {
@@ -86,6 +104,7 @@ export class PeoplesService {
         birthDate: personData.birthDate
           ? new Date(personData.birthDate)
           : undefined,
+
         ...(socials && {
           socials: {
             deleteMany: {},
@@ -299,7 +318,7 @@ export class PeoplesService {
       fs.copyFileSync(file.path, finalPath);
       fs.unlinkSync(file.path);
 
-      const fileUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${filename}`;
+      const fileUrl = `/storage/${personId}/photopacks/${photopack.id}/${filename}`;
 
       let thumbUrl = fileUrl;
       if (file.mimetype.startsWith("video")) {
@@ -312,7 +331,7 @@ export class PeoplesService {
             { stdio: "ignore" },
           );
           if (fs.existsSync(thumbPath)) {
-            thumbUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
           }
         } catch (err) {}
       }
@@ -343,10 +362,7 @@ export class PeoplesService {
             "storage",
             "peoples_dev",
           );
-        const relativePath = firstVideoUrl.replace(
-          `${process.env.API_URL || "http://localhost:3001"}/storage/`,
-          "",
-        );
+        const relativePath = firstVideoUrl.replace(`/storage/`, "");
         const videoPath = path.join(storagePath, relativePath);
         const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
@@ -357,7 +373,7 @@ export class PeoplesService {
             { stdio: "ignore" },
           );
           if (fs.existsSync(thumbPath)) {
-            coverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            coverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
             firstMedia.isCover = true;
           }
         } catch (err) {}
@@ -488,7 +504,7 @@ export class PeoplesService {
       fs.copyFileSync(file.path, finalPath);
       fs.unlinkSync(file.path);
 
-      const fileUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${filename}`;
+      const fileUrl = `/storage/${personId}/photopacks/${photopack.id}/${filename}`;
 
       let thumbUrl = fileUrl;
       if (file.mimetype.startsWith("video")) {
@@ -501,7 +517,7 @@ export class PeoplesService {
             { stdio: "ignore" },
           );
           if (fs.existsSync(thumbPath)) {
-            thumbUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
           }
         } catch (err) {}
       }
@@ -552,10 +568,7 @@ export class PeoplesService {
             "peoples_dev",
           );
         const videoUrl = coverMedia.url;
-        const relativePath = videoUrl.replace(
-          `${process.env.API_URL || "http://localhost:3001"}/storage/`,
-          "",
-        );
+        const relativePath = videoUrl.replace(`/storage/`, "");
         const videoPath = path.join(storagePath, relativePath);
         const thumbFilename = `${Date.now()}-cover-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
@@ -566,7 +579,7 @@ export class PeoplesService {
             { stdio: "ignore" },
           );
           if (fs.existsSync(thumbPath)) {
-            finalCoverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
           }
         } catch (err) {}
         if (!finalCoverUrl) {
@@ -594,10 +607,7 @@ export class PeoplesService {
               "peoples_dev",
             );
           const videoUrl = firstMedia.url;
-          const relativePath = videoUrl.replace(
-            `${process.env.API_URL || "http://localhost:3001"}/storage/`,
-            "",
-          );
+          const relativePath = videoUrl.replace(`/storage/`, "");
           const videoPath = path.join(storagePath, relativePath);
           const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
           const thumbPath = path.join(targetDir, thumbFilename);
@@ -608,7 +618,7 @@ export class PeoplesService {
               { stdio: "ignore" },
             );
             if (fs.existsSync(thumbPath)) {
-              finalCoverUrl = `${process.env.API_URL || "http://localhost:3001"}/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+              finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
               await this.prisma.media.update({
                 where: { id: firstMedia.id },
                 data: { isCover: true },

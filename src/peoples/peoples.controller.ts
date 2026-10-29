@@ -73,13 +73,11 @@ export class PeoplesController {
     files: { avatar?: Express.Multer.File[]; cover?: Express.Multer.File[] },
   ) {
     const updates: any = {};
-    const baseUrl = process.env.API_URL || "http://localhost:3001";
-
     if (files.avatar?.[0]) {
-      updates.avatarUrl = `${baseUrl}/storage/${id}/${files.avatar[0].filename}`;
+      updates.avatarUrl = `/storage/${id}/${files.avatar[0].filename}`;
     }
     if (files.cover?.[0]) {
-      updates.coverUrl = `${baseUrl}/storage/${id}/${files.cover[0].filename}`;
+      updates.coverUrl = `/storage/${id}/${files.cover[0].filename}`;
     }
 
     if (Object.keys(updates).length > 0) {
