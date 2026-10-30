@@ -26,7 +26,7 @@ export class PeoplesService {
     return this.prisma.person.create({
       data: {
         ...personData,
-        birthDate: personData.birthDate ? new Date(personData.birthDate) : null,
+        birthDate: personData.birthDate,
         socials: {
           create: socials || [],
         },
@@ -101,9 +101,7 @@ export class PeoplesService {
       where: { id },
       data: {
         ...personData,
-        birthDate: personData.birthDate
-          ? new Date(personData.birthDate)
-          : undefined,
+        birthDate: personData.birthDate,
 
         ...(socials && {
           socials: {

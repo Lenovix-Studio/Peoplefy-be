@@ -42,7 +42,7 @@ model Person {
   fullName    String    @map("full_name") @db.VarChar(150)
   nickname    String?   @db.VarChar(100)
   email       String?   @db.VarChar(255)
-  birthDate   DateTime? @map("birth_date") @db.Date
+  birthDate   String? @map("birth_date") @db.VarChar(8)
   birthPlace  String?   @map("birth_place") @db.VarChar(100)
   description String?   @db.Text
   tags        String[]

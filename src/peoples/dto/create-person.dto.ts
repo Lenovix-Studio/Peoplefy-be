@@ -3,7 +3,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsDateString,
+  Matches,
   IsArray,
   ValidateNested,
   MaxLength,
@@ -56,7 +56,8 @@ export class CreatePersonDto {
   isNsfw?: boolean;
 
   @ApiPropertyOptional()
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{8}$/)
   @IsOptional()
   birthDate?: string;
 
