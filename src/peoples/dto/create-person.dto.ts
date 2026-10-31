@@ -24,7 +24,7 @@ export class ClosePersonDto {
   @IsString() @IsNotEmpty() label!: string;
   @IsString() @IsNotEmpty() relation!: string;
   @IsString() @IsNotEmpty() platform!: string;
-  @IsString() @IsNotEmpty() url!: string;
+  @IsString() @IsOptional() url?: string;
 }
 
 export class CreatePersonDto {

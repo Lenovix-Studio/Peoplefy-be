@@ -8,29 +8,29 @@ datasource db {
 }
 
 model CommonCodeType {
-  id          String             @id @default(uuid(7))
-  code        String             @db.VarChar(50) @unique
-  name        String             @db.VarChar(100)
+  id          String   @id @default(uuid(7))
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(100)
   description String?
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  details     CommonCodeDetail[]
+  details CommonCodeDetail[]
 
   @@map("common_code_types")
 }
 
 model CommonCodeDetail {
-  id        String         @id @default(uuid(7))
-  typeId    String         @map("type_id")
-  code      String         @db.VarChar(50)
-  label     String         @db.VarChar(100)
-  sortOrder Int            @default(0) @map("sort_order")
-  isActive  Boolean        @default(true) @map("is_active")
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
+  id        String   @id @default(uuid(7))
+  typeId    String   @map("type_id")
+  code      String   @db.VarChar(50)
+  label     String   @db.VarChar(100)
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  type      CommonCodeType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type CommonCodeType @relation(fields: [typeId], references: [id], onDelete: Cascade)
 
   @@unique([typeId, code])
   @@index([typeId])
@@ -38,23 +38,23 @@ model CommonCodeDetail {
 }
 
 model Person {
-  id          String    @id @default(uuid(7))
-  fullName    String    @map("full_name") @db.VarChar(150)
-  nickname    String?   @db.VarChar(100)
-  email       String?   @db.VarChar(255)
-  birthDate   String? @map("birth_date") @db.VarChar(8)
-  birthPlace  String?   @map("birth_place") @db.VarChar(100)
-  description String?   @db.Text
+  id          String   @id @default(uuid(7))
+  fullName    String   @map("full_name") @db.VarChar(150)
+  nickname    String?  @db.VarChar(100)
+  email       String?  @db.VarChar(255)
+  birthDate   String?  @map("birth_date") @db.VarChar(8)
+  birthPlace  String?  @map("birth_place") @db.VarChar(100)
+  description String?  @db.Text
   tags        String[]
-  gender      String?   @db.VarChar(20)
-  isNsfw      Boolean   @default(false) @map("is_nsfw")
-  activities  String[]  @map("activities")
-  
-  coverUrl    String?   @map("cover_url")
-  avatarUrl   String?   @map("avatar_url")
+  gender      String?  @db.VarChar(20)
+  isNsfw      Boolean  @default(false) @map("is_nsfw")
+  activities  String[] @map("activities")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  coverUrl  String? @map("cover_url")
+  avatarUrl String? @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   socials      Social[]
   websites     Website[]
@@ -72,7 +72,7 @@ model Social {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@index([personId])
   @@map("socials")
@@ -86,7 +86,7 @@ model Website {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@index([personId])
   @@map("websites")
@@ -98,11 +98,11 @@ model ClosePerson {
   label     String?  @db.VarChar(100)
   relation  String   @db.VarChar(100)
   platform  String   @db.VarChar(50)
-  url       String   @db.VarChar(255)
+  url       String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@index([personId])
   @@map("close_persons")
@@ -120,22 +120,22 @@ model Photopack {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
-  media       Media[]
+  person Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+  media  Media[]
 
   @@index([personId])
   @@map("photopacks")
 }
 
 model Media {
-  id          String    @id @default(uuid(7))
-  photopackId String    @map("photopack_id")
-  type        String    @db.VarChar(50) // "image" or "video"
-  url         String    @db.Text
-  isCover     Boolean   @default(false) @map("is_cover")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id          String   @id @default(uuid(7))
+  photopackId String   @map("photopack_id")
+  type        String   @db.VarChar(50) // "image" or "video"
+  url         String   @db.Text
+  isCover     Boolean  @default(false) @map("is_cover")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  photopack   Photopack @relation(fields: [photopackId], references: [id], onDelete: Cascade)
+  photopack Photopack @relation(fields: [photopackId], references: [id], onDelete: Cascade)
 
   @@index([photopackId])
   @@map("media")
