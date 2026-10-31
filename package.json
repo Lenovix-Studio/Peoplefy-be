@@ -9,8 +9,9 @@
     "@swc/core": "^1.16.2",
     "@types/bun": "latest",
     "@types/node": "^26.6.3",
+    "@types/pg": "^8.23.1",
     "dotenv-cli": "^8.0.0",
-    "prisma": "^6.0.0"
+    "prisma": "^7.0.0"
   },
   "peerDependencies": {
     "typescript": "6"
@@ -22,10 +23,12 @@
     "@nestjs/platform-express": "^12.1.0",
     "@nestjs/serve-static": "^12.0.0",
     "@nestjs/swagger": "^12.0.2",
+    "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.0",
     "@types/multer": "^2.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -33,16 +36,16 @@
     "build": "nest build --builder swc",
     "start:prod": "bun --env-file=.env run src/main.ts",
     "start:dev": "bun --watch --env-file=.env.dev run src/main.ts",
-    "prisma:dev:migrate": "dotenv -e .env.dev -- bunx prisma migrate dev",
-    "prisma:dev:push": "dotenv -e .env.dev -- bunx prisma db push",
-    "prisma:dev:generate": "dotenv -e .env.dev -- bunx prisma generate",
-    "prisma:dev:seed": "dotenv -e .env.dev -- bunx prisma db seed",
-    "prisma:dev:studio": "dotenv -e .env.dev -- bunx prisma studio",
-    "prisma:prod:migrate": "dotenv -e .env -- bunx prisma migrate deploy",
-    "prisma:prod:push": "dotenv -e .env -- bunx prisma db push",
-    "prisma:prod:generate": "dotenv -e .env -- bunx prisma generate",
-    "prisma:prod:seed": "dotenv -e .env -- bunx prisma db seed",
-    "prisma:prod:studio": "dotenv -e .env -- bunx prisma studio"
+    "prisma:dev:migrate": "dotenv -e .env.dev -- npx prisma migrate dev",
+    "prisma:dev:push": "dotenv -e .env.dev -- npx prisma db push",
+    "prisma:dev:generate": "dotenv -e .env.dev -- npx prisma generate",
+    "prisma:dev:seed": "dotenv -e .env.dev -- npx prisma db seed",
+    "prisma:dev:studio": "dotenv -e .env.dev -- npx prisma studio",
+    "prisma:prod:migrate": "dotenv -e .env -- npx prisma migrate deploy",
+    "prisma:prod:push": "dotenv -e .env -- npx prisma db push",
+    "prisma:prod:generate": "dotenv -e .env -- npx prisma generate",
+    "prisma:prod:seed": "dotenv -e .env -- npx prisma db seed",
+    "prisma:prod:studio": "dotenv -e .env -- npx prisma studio"
   },
   "prisma": {
     "seed": "bun run prisma/seed.ts"
