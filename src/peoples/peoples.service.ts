@@ -1,9 +1,27 @@
 import * as fs from "fs";
 import * as path from "path";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePersonDto } from "./dto/create-person.dto";
 import { UpdatePersonDto } from "./dto/update-person.dto";
+
+const execAsync = promisify(exec);
+
+async function generateVideoThumbnail(
+  videoPath: string,
+  thumbPath: string,
+): Promise<boolean> {
+  try {
+    await execAsync(
+      `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
+    );
+    return fs.existsSync(thumbPath);
+  } catch {
+    return false;
+  }
+}
 
 function sanitizePath(
   url: string | null | undefined,
@@ -313,8 +331,8 @@ export class PeoplesService {
       const filename = `${Date.now()}-${i}${ext}`;
       const finalPath = path.join(targetDir, filename);
 
-      fs.copyFileSync(file.path, finalPath);
-      fs.unlinkSync(file.path);
+      await fs.promises.copyFile(file.path, finalPath);
+      await fs.promises.unlink(file.path);
 
       const fileUrl = `/storage/${personId}/photopacks/${photopack.id}/${filename}`;
 
@@ -322,16 +340,10 @@ export class PeoplesService {
       if (file.mimetype.startsWith("video")) {
         const thumbFilename = `${Date.now()}-${i}-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
-        try {
-          const { execSync } = require("child_process");
-          execSync(
-            `ffmpeg -ss 00:00:01 -i "${finalPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
-            { stdio: "ignore" },
-          );
-          if (fs.existsSync(thumbPath)) {
-            thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
-          }
-        } catch (err) {}
+        const ok = await generateVideoThumbnail(finalPath, thumbPath);
+        if (ok) {
+          thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+        }
       }
 
       if (isCover && !coverUrl) {
@@ -364,17 +376,11 @@ export class PeoplesService {
         const videoPath = path.join(storagePath, relativePath);
         const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
-        try {
-          const { execSync } = require("child_process");
-          execSync(
-            `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
-            { stdio: "ignore" },
-          );
-          if (fs.existsSync(thumbPath)) {
-            coverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
-            firstMedia.isCover = true;
-          }
-        } catch (err) {}
+        const ok = await generateVideoThumbnail(videoPath, thumbPath);
+        if (ok) {
+          coverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+          firstMedia.isCover = true;
+        }
       } else {
         coverUrl = firstMedia.url;
         firstMedia.isCover = true;
@@ -499,8 +505,8 @@ export class PeoplesService {
       const filename = `${Date.now()}-${i}${ext}`;
       const finalPath = path.join(targetDir, filename);
 
-      fs.copyFileSync(file.path, finalPath);
-      fs.unlinkSync(file.path);
+      await fs.promises.copyFile(file.path, finalPath);
+      await fs.promises.unlink(file.path);
 
       const fileUrl = `/storage/${personId}/photopacks/${photopack.id}/${filename}`;
 
@@ -508,16 +514,10 @@ export class PeoplesService {
       if (file.mimetype.startsWith("video")) {
         const thumbFilename = `${Date.now()}-${i}-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
-        try {
-          const { execSync } = require("child_process");
-          execSync(
-            `ffmpeg -ss 00:00:01 -i "${finalPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
-            { stdio: "ignore" },
-          );
-          if (fs.existsSync(thumbPath)) {
-            thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
-          }
-        } catch (err) {}
+        const ok = await generateVideoThumbnail(finalPath, thumbPath);
+        if (ok) {
+          thumbUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+        }
       }
 
       if (isCover && !coverUrl) {
@@ -570,16 +570,10 @@ export class PeoplesService {
         const videoPath = path.join(storagePath, relativePath);
         const thumbFilename = `${Date.now()}-cover-thumb.jpg`;
         const thumbPath = path.join(targetDir, thumbFilename);
-        try {
-          const { execSync } = require("child_process");
-          execSync(
-            `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
-            { stdio: "ignore" },
-          );
-          if (fs.existsSync(thumbPath)) {
-            finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
-          }
-        } catch (err) {}
+        const ok = await generateVideoThumbnail(videoPath, thumbPath);
+        if (ok) {
+          finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+        }
         if (!finalCoverUrl) {
           finalCoverUrl = coverUrl || coverMedia.url;
         }
@@ -609,20 +603,14 @@ export class PeoplesService {
           const videoPath = path.join(storagePath, relativePath);
           const thumbFilename = `${Date.now()}-auto-thumb.jpg`;
           const thumbPath = path.join(targetDir, thumbFilename);
-          try {
-            const { execSync } = require("child_process");
-            execSync(
-              `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}"`,
-              { stdio: "ignore" },
-            );
-            if (fs.existsSync(thumbPath)) {
-              finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
-              await this.prisma.media.update({
-                where: { id: firstMedia.id },
-                data: { isCover: true },
-              });
-            }
-          } catch (err) {}
+          const ok = await generateVideoThumbnail(videoPath, thumbPath);
+          if (ok) {
+            finalCoverUrl = `/storage/${personId}/photopacks/${photopack.id}/${thumbFilename}`;
+            await this.prisma.media.update({
+              where: { id: firstMedia.id },
+              data: { isCover: true },
+            });
+          }
           if (!finalCoverUrl) {
             finalCoverUrl = coverUrl || firstMedia.url;
           }

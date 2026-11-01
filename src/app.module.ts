@@ -19,6 +19,11 @@ import { PeoplesModule } from "./peoples/peoples.module";
           {
             rootPath,
             serveRoot: "/storage",
+            serveStaticOptions: {
+              maxAge: "7d",
+              etag: true,
+              lastModified: true,
+            },
           },
         ];
       },
